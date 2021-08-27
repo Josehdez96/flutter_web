@@ -1,13 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:universal_html/html.dart';
+import 'package:universal_html/html.dart' as html;
 
 class PageProvider extends ChangeNotifier {
 
   PageController scrollController = new PageController();
   List<String> _pages = ['home', 'about', 'pricing', 'contact', 'location'];
+  int _currentIndex = 0;
 
   createScrollController(String routeName) {
     this.scrollController = new PageController(initialPage: getPageIndex(routeName));
+    html.document.title = _pages[getPageIndex(routeName)];
+
+    this.scrollController.addListener(() {
+      final pageIndex = (this.scrollController.page ?? 0).round();
+      if ( pageIndex != _currentIndex) {
+        html.window.history.pushState(null, '', '#/${ _pages[pageIndex] }');
+        _currentIndex = pageIndex;
+        html.document.title = _pages[pageIndex];
+      }
+    });
   }
 
   int getPageIndex(String routeName) {
@@ -17,7 +28,6 @@ class PageProvider extends ChangeNotifier {
   }
 
   goTo(int index) {
-    window.history.pushState(null, '', '#/${ _pages[index] }');
 
     scrollController.animateToPage(index,
     duration: Duration(milliseconds: 300),
